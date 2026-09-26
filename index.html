@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda de Estudos DP</title>
+<style>
+  :root{
+    --brand-teal: #01516A;
+    --brand-teal-deep: #013847;
+    --ink: #161616;
+    --paper: #FBFAF8;
+    --card: #FFFFFF;
+    --surface-alt: #F3F1EB;
+    --line: #E4E0D8;
+    --muted: #6B6B66;
+    --heading: #013847;
+    --teal: #01516A;
+    --teal-tint: #E6EEF0;
+    --gold: #C9973E;
+    --gold-dark: #A97C2E;
+    --danger: #B3452F;
+    --warn-bg: #FBEAE5;
+    --warn-border: #E3B3A6;
+    --warn-text: #8A3524;
+    --radius: 10px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink: #ECEDEA; --paper: #0E1B1E; --card: #17282C; --surface-alt: #1B2E32;
+      --line: #2A4046; --muted: #9FB0AE; --heading: #74D9EA; --teal: #74D9EA;
+      --teal-tint: rgba(116,217,234,0.14); --gold: #E3B45A; --gold-dark: #C9973E;
+      --danger: #E2836A; --warn-bg: #3A241E; --warn-border: #6B4235; --warn-text: #F2B49B;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink: #ECEDEA; --paper: #0E1B1E; --card: #17282C; --surface-alt: #1B2E32;
+    --line: #2A4046; --muted: #9FB0AE; --heading: #74D9EA; --teal: #74D9EA;
+    --teal-tint: rgba(116,217,234,0.14); --gold: #E3B45A; --gold-dark: #C9973E;
+    --danger: #E2836A; --warn-bg: #3A241E; --warn-border: #6B4235; --warn-text: #F2B49B;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:'Segoe UI Semibold','Helvetica Neue',Arial,sans-serif; letter-spacing:0.2px; }
+
+  header{ background: linear-gradient(135deg, var(--brand-teal) 0%, var(--brand-teal-deep) 100%); color:#fff; padding:28px 24px; }
+  .header-inner{ max-width:1080px; margin:0 auto; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:20px; }
+  .brand-mark{ display:flex; align-items:center; gap:12px; }
+  .brand-dot{ width:38px; height:38px; border-radius:10px; background:var(--gold); display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--brand-teal-deep); font-size:15px; flex-shrink:0; }
+  header h1{ margin:0; font-size:22px; font-weight:700; }
+  header p.sub{ margin:4px 0 0; font-size:13.5px; color:#CFE1E6; }
+  .stats-row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .stat-pill{ background:rgba(255,255,255,0.09); border:1px solid rgba(255,255,255,0.18); border-radius:999px; padding:8px 16px; font-size:12.5px; display:flex; align-items:center; gap:8px; white-space:nowrap; color:#fff; }
+  .stat-pill b{ font-size:14px; }
+  .dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .sync-badge{ background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.28); border-radius:999px; padding:8px 16px; font-size:12px; font-weight:600; color:#fff; white-space:nowrap; cursor:pointer; }
+  .sync-badge.local{ background:rgba(255,255,255,0.09); }
+  .sync-badge.err{ background:rgba(226,131,106,0.3); border-color:rgba(226,131,106,0.5); }
+
+  .progress-card{ max-width:1080px; margin:20px auto 0; padding:0 24px; }
+  .progress-inner{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px 24px; box-shadow:0 10px 30px rgba(1,81,106,0.10); display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+  .ring{ flex-shrink:0; }
+  .ring-track{ stroke:var(--line); } .ring-fill{ stroke:var(--gold); } .ring-label{ fill:var(--heading); }
+  .progress-text b{ font-size:20px; color:var(--teal); }
+  .progress-text p{ margin:2px 0 0; font-size:13px; color:var(--muted); }
+  .bar-track{ flex:1; min-width:200px; height:8px; background:var(--line); border-radius:999px; overflow:hidden; }
+  .bar-fill{ height:100%; background:linear-gradient(90deg, var(--gold), var(--gold-dark)); border-radius:999px; transition:width .4s ease; }
+
+  main{ max-width:1080px; margin:0 auto; padding:28px 24px 60px; }
+  .toolbar{ display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
+  .toolbar h2{ margin:0; font-size:17px; color:var(--heading); }
+  .toolbar-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  input[type="text"], input[type="date"], input[type="url"], select, textarea{ font-family:inherit; font-size:13.5px; padding:9px 12px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--ink); }
+  input:focus, select:focus, textarea:focus, button:focus-visible{ outline:2px solid var(--gold); outline-offset:1px; }
+  .search-box{ min-width:200px; }
+
+  button{ font-family:inherit; cursor:pointer; border:none; border-radius:8px; font-size:13.5px; font-weight:600; padding:10px 16px; transition:transform .08s ease, background .15s ease; }
+  button:active{ transform:scale(0.97); }
+  button:disabled{ opacity:.55; cursor:default; }
+  .btn-primary{ background:var(--gold); color:var(--brand-teal-deep); }
+  .btn-primary:hover{ background:var(--gold-dark); color:#fff; }
+  .btn-ghost{ background:transparent; color:var(--teal); border:1px solid var(--teal); }
+  .btn-ghost:hover{ background:var(--teal-tint); }
+  .btn-icon{ background:transparent; border:1px solid var(--line); padding:6px 9px; font-size:13px; color:var(--muted); border-radius:7px; }
+  .btn-icon:hover{ background:var(--teal-tint); color:var(--teal); border-color:var(--teal); }
+  .btn-icon.danger:hover{ background:var(--warn-bg); color:var(--danger); border-color:var(--danger); }
+
+  .board{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
+  @media (max-width:920px){ .board{ grid-template-columns:repeat(2, 1fr); } }
+  @media (max-width:600px){ .board{ grid-template-columns:1fr; } }
+  .column{ background:var(--surface-alt); border-radius:var(--radius); padding:14px; min-height:120px; }
+  .column-head{ display:flex; align-items:center; gap:8px; margin-bottom:12px; padding:0 2px; }
+  .column-head .dot{ width:9px; height:9px; }
+  .column-head h3{ margin:0; font-size:12.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--ink); }
+  .column-head span{ margin-left:auto; font-size:11.5px; color:var(--muted); background:var(--card); border-radius:999px; padding:1px 8px; border:1px solid var(--line); }
+
+  .bg-nao{ background:#8A8580; } .bg-and{ background:#C9973E; } .bg-con{ background:#2C9563; } .bg-rev{ background:#7B5FCB; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-left:4px solid var(--brand-teal); border-radius:8px; padding:12px 13px; margin-bottom:10px; box-shadow:0 1px 2px rgba(0,0,0,.03); }
+  .card[data-status="nao"]{ border-left-color:#8A8580; }
+  .card[data-status="and"]{ border-left-color:#C9973E; }
+  .card[data-status="con"]{ border-left-color:#2C9563; }
+  .card[data-status="rev"]{ border-left-color:#7B5FCB; }
+  .card h4{ margin:0 0 6px; font-size:14px; color:var(--ink); line-height:1.3; }
+  .card .meta{ font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px; margin-bottom:4px; }
+  .card .meta.overdue{ color:var(--danger); font-weight:600; }
+  .card a.link{ display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--teal); text-decoration:none; margin-top:4px; font-weight:600; }
+  .card a.link:hover{ text-decoration:underline; }
+  .card-actions{ display:flex; gap:6px; margin-top:10px; justify-content:flex-end; }
+  .card-actions button{ padding:5px 8px; font-size:12px; }
+
+  .empty-col{ font-size:12px; color:var(--muted); text-align:center; padding:18px 6px; border:1px dashed var(--line); border-radius:8px; }
+  .empty-state{ text-align:center; padding:60px 20px; background:var(--card); border:1px dashed var(--line); border-radius:var(--radius); }
+  .empty-state h3{ color:var(--heading); margin-bottom:6px; }
+  .empty-state p{ color:var(--muted); font-size:13.5px; margin-bottom:18px; }
+
+  .warn-box{ background:var(--warn-bg); border:1px solid var(--warn-border); color:var(--warn-text); border-radius:8px; padding:12px 14px; font-size:13px; margin-bottom:18px; display:none; }
+  .warn-box.show{ display:block; }
+
+  .overlay{ position:fixed; inset:0; background:rgba(10,10,10,.55); display:none; align-items:center; justify-content:center; padding:20px; z-index:50; }
+  .overlay.active{ display:flex; }
+  .modal{ background:var(--card); border:1px solid var(--line); border-radius:14px; width:100%; max-width:460px; padding:26px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,.35); }
+  .modal.wide{ max-width:560px; }
+  .modal h3{ margin:0 0 8px; color:var(--heading); font-size:17px; }
+  .modal p.desc{ font-size:13px; color:var(--muted); line-height:1.5; margin:0 0 18px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:5px; }
+  .field input, .field select, .field textarea{ width:100%; }
+  .field textarea{ min-height:110px; font-family: ui-monospace, Consolas, monospace; font-size:12px; resize:vertical; }
+  .field-row{ display:flex; gap:10px; }
+  .field-row .field{ flex:1; }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  .hint{ font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.5; }
+  .hint a{ color: var(--teal); }
+
+  footer{ text-align:center; padding:20px; font-size:12px; color:var(--muted); }
+  .toast{ display:none; position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--brand-teal-deep); color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.3); z-index:100; max-width:90%; text-align:center; }
+  .toast.show{ display:block; }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="brand-mark">
+        <div class="brand-dot">DP</div>
+        <div>
+          <h1>Agenda de Estudos</h1>
+          <p class="sub">Departamento Pessoal · organize seus temas, prazos e materiais de estudo</p>
+        </div>
+      </div>
+    </div>
+    <div class="stats-row" id="statsRow">
+      <span class="sync-badge" id="syncBadge" title="Clique para configurar a sincronização na nuvem">Somente neste navegador</span>
+    </div>
+  </div>
+</header>
+
+<div class="progress-card">
+  <div class="progress-inner">
+    <svg class="ring" width="64" height="64" viewBox="0 0 64 64">
+      <circle class="ring-track" cx="32" cy="32" r="26" fill="none" stroke-width="8"></circle>
+      <circle id="ringFillCircle" class="ring-fill" cx="32" cy="32" r="26" fill="none" stroke-width="8" stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="163.36" transform="rotate(-90 32 32)"></circle>
+      <text id="ringLabel" class="ring-label" x="32" y="37" text-anchor="middle" font-size="14" font-weight="700">0%</text>
+    </svg>
+    <div class="progress-text">
+      <b id="progressHeadline">Comece cadastrando seu primeiro tema</b>
+      <p id="progressSub">Nenhum tema cadastrado ainda</p>
+    </div>
+    <div class="bar-track"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+  </div>
+</div>
+
+<main>
+  <div class="toolbar">
+    <h2>Meus temas de estudo</h2>
+    <div class="toolbar-actions">
+      <input type="text" class="search-box" id="searchInput" placeholder="Buscar tema...">
+      <button class="btn-ghost" id="btnExport">⬇ Exportar backup</button>
+      <button class="btn-ghost" id="btnImport">⬆ Importar backup</button>
+      <input type="file" id="importFile" accept="application/json" style="display:none;">
+      <button class="btn-primary" id="btnNovo">+ Novo tema</button>
+    </div>
+  </div>
+
+  <div class="warn-box" id="storageWarning">
+    ⚠ Não foi possível salvar seus dados agora neste navegador. Use o botão <b>Exportar backup</b> para não perder o que já cadastrou.
+  </div>
+
+  <div id="boardWrap"><div class="board" id="board"></div></div>
+
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <h3>Sua agenda está vazia</h3>
+    <p>Cadastre os temas de Departamento Pessoal que você quer estudar — eSocial, férias, rescisão, folha de pagamento e muito mais.</p>
+    <button class="btn-primary" id="btnNovoEmpty">+ Adicionar meu primeiro tema</button>
+  </div>
+</main>
+
+<footer id="footerNote">Seus dados estão salvos apenas neste navegador. Clique no selo acima para sincronizar entre dispositivos.</footer>
+
+<!-- Modal de tema -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle">Novo tema de estudo</h3>
+    <form id="temaForm">
+      <input type="hidden" id="temaId">
+      <div class="field">
+        <label for="titulo">Tema *</label>
+        <input type="text" id="titulo" placeholder="Ex: Cálculo de férias e 13º salário" required>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="data">Data prevista de conclusão</label>
+          <input type="date" id="data">
+        </div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status">
+            <option value="nao">Não iniciado</option>
+            <option value="and">Em andamento</option>
+            <option value="con">Concluído</option>
+            <option value="rev">Revisão</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="link">Link do curso / aula (YouTube ou outro)</label>
+        <input type="url" id="link" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="notas">Observações (opcional)</label>
+        <input type="text" id="notas" placeholder="Ex: revisar tabela de INSS 2026 antes da prova">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="btnCancelar">Cancelar</button>
+        <button type="button" class="btn-primary" id="btnSalvar">Salvar tema</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Configuração da nuvem (Firebase) -->
+<div class="overlay" id="cloudOverlay">
+  <div class="modal wide">
+    <h3>Sincronizar entre dispositivos</h3>
+    <p class="desc">Cole aqui a configuração do seu projeto Firebase para que os temas cadastrados fiquem disponíveis em qualquer navegador ou computador que acessar este mesmo endereço. Sem isso, os dados ficam salvos só neste navegador.</p>
+    <div class="field">
+      <label for="firebaseConfigInput">Configuração do Firebase (firebaseConfig)</label>
+      <textarea id="firebaseConfigInput" placeholder='{
+  "apiKey": "...",
+  "authDomain": "...",
+  "projectId": "...",
+  "storageBucket": "...",
+  "messagingSenderId": "...",
+  "appId": "..."
+}'></textarea>
+      <p class="hint">Cole o objeto igual aparece no console do Firebase (em Configurações do projeto → Seus apps). Pode colar com ou sem "const firebaseConfig = ".</p>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button type="button" class="btn-ghost" id="btnCloudDisconnect" style="display:none;">Desconectar da nuvem</button>
+      <div style="display:flex; gap:10px;">
+        <button type="button" class="btn-ghost" id="btnCloudCancel">Fechar</button>
+        <button type="button" class="btn-primary" id="btnCloudSave">Conectar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmação e aviso próprios -->
+<div class="overlay" id="confirmOverlay">
+  <div class="modal" style="max-width:380px;">
+    <h3 id="confirmTitle">Confirmar ação</h3>
+    <p id="confirmMessage" style="font-size:13.5px; color:var(--muted); line-height:1.5; margin:0 0 20px;"></p>
+    <div class="modal-actions" id="confirmButtons"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  // O Firebase só é carregado quando a nuvem é realmente conectada (import feito sob demanda
+  // dentro de connectCloud), para que o modo local nunca dependa de acesso à internet.
+  let firebaseApi = null;
+  async function loadFirebaseApi(){
+    if(firebaseApi) return firebaseApi;
+    const [{ initializeApp }, firestoreMod] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js'),
+    ]);
+    firebaseApi = { initializeApp, ...firestoreMod };
+    return firebaseApi;
+  }
+
+  const STORAGE_KEY = 'dp_agenda_estudos_v1';
+  const CONFIG_KEY = 'dp_agenda_firebase_config_v1';
+  const STATUS_META = {
+    nao: { label: 'Não iniciado', bg: 'bg-nao' },
+    and: { label: 'Em andamento', bg: 'bg-and' },
+    con: { label: 'Concluído',    bg: 'bg-con' },
+    rev: { label: 'Revisão',      bg: 'bg-rev' },
+  };
+  const COLUMN_ORDER = ['nao','and','con','rev'];
+
+  let temas = [];
+  let editingId = null;
+  let storageOk = true;
+  let cloudMode = false;
+  let db = null;
+  let temasCollection = null;
+  let unsubscribeCloud = null;
+
+  function uid(){ return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+  // ===== Indicador de sincronização =====
+  function setSyncBadge(state){
+    const badge = document.getElementById('syncBadge');
+    const footer = document.getElementById('footerNote');
+    badge.classList.remove('local','err');
+    if(state === 'cloud'){
+      badge.textContent = '☁ Sincronizado na nuvem';
+      footer.textContent = 'Seus dados estão sincronizados na nuvem — acesse este mesmo endereço de qualquer navegador ou computador para vê-los.';
+    } else if(state === 'local'){
+      badge.classList.add('local');
+      badge.textContent = 'Somente neste navegador';
+      footer.textContent = 'Seus dados estão salvos apenas neste navegador. Clique no selo acima para sincronizar entre dispositivos.';
+    } else if(state === 'connecting'){
+      badge.textContent = 'Conectando…';
+    } else {
+      badge.classList.add('err');
+      badge.textContent = '⚠ Não foi possível salvar';
+    }
+  }
+
+  // ===== Armazenamento local (usado sem nuvem configurada) =====
+  function checkLocalStorage(){
+    try{ localStorage.setItem('__dp_test__','1'); localStorage.removeItem('__dp_test__'); return true; }
+    catch(e){ return false; }
+  }
+  function loadLocal(){
+    storageOk = checkLocalStorage();
+    document.getElementById('storageWarning').classList.toggle('show', !storageOk);
+    if(!storageOk){ temas = []; return; }
+    try{ const raw = localStorage.getItem(STORAGE_KEY); temas = raw ? JSON.parse(raw) : []; }
+    catch(e){ temas = []; }
+  }
+  function saveLocal(){
+    if(!storageOk) return;
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(temas)); }
+    catch(e){ storageOk = false; document.getElementById('storageWarning').classList.add('show'); setSyncBadge('error'); }
+  }
+
+  // ===== Nuvem (Firebase Firestore) =====
+  function getSavedConfig(){
+    try{ const raw = localStorage.getItem(CONFIG_KEY); return raw ? JSON.parse(raw) : null; }
+    catch(e){ return null; }
+  }
+  function saveConfig(cfg){ localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg)); }
+  function clearConfig(){ localStorage.removeItem(CONFIG_KEY); }
+
+  async function connectCloud(cfg){
+    setSyncBadge('connecting');
+    try{
+      const { initializeApp, getFirestore, collection, onSnapshot, getDocs } = await loadFirebaseApi();
+      const app = initializeApp(cfg, 'dp-agenda-' + Date.now());
+      db = getFirestore(app);
+      temasCollection = collection(db, 'temas');
+      // testa a conexão lendo a coleção uma vez antes de assumir sucesso
+      await getDocs(temasCollection);
+
+      if(unsubscribeCloud) unsubscribeCloud();
+      unsubscribeCloud = onSnapshot(temasCollection,
+        (snap) => {
+          temas = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+          cloudMode = true;
+          setSyncBadge('cloud');
+          render();
+        },
+        (err) => {
+          console.error('Erro de sincronização', err);
+          cloudMode = false;
+          loadLocal();
+          setSyncBadge('local');
+          render();
+          showToast('Não foi possível sincronizar na nuvem agora. Usando este navegador até a conexão voltar.');
+        }
+      );
+      return true;
+    }catch(err){
+      console.error('Erro ao conectar ao Firebase', err);
+      cloudMode = false;
+      return false;
+    }
+  }
+
+  async function initStorage(){
+    const saved = getSavedConfig();
+    if(saved){
+      const ok = await connectCloud(saved);
+      if(!ok){
+        loadLocal();
+        setSyncBadge(storageOk ? 'local' : 'error');
+        render();
+        showToast('Não foi possível conectar com a configuração salva. Verifique-a no selo "Somente neste navegador".');
+      }
+    } else {
+      loadLocal();
+      setSyncBadge(storageOk ? 'local' : 'error');
+      render();
+    }
+  }
+
+  // ===== Escrita (nuvem ou local) =====
+  async function gravarTema(id, data){
+    if(cloudMode){
+      await firebaseApi.setDoc(firebaseApi.doc(temasCollection, id), data);
+    } else {
+      const idx = temas.findIndex(t => t.id === id);
+      if(idx > -1){ temas[idx] = Object.assign({ id }, data); }
+      else { temas.push(Object.assign({ id }, data)); }
+      saveLocal();
+      render();
+    }
+  }
+  async function apagarTema(id){
+    if(cloudMode){
+      await firebaseApi.deleteDoc(firebaseApi.doc(temasCollection, id));
+    } else {
+      temas = temas.filter(t => t.id !== id);
+      saveLocal();
+      render();
+    }
+  }
+
+  function fmtDate(iso){ if(!iso) return null; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+  function isOverdue(iso, status){
+    if(!iso || status === 'con') return false;
+    const today = new Date(); today.setHours(0,0,0,0);
+    return new Date(iso + 'T00:00:00') < today;
+  }
+
+  // ===== Renderização =====
+  function render(){
+    const search = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+    const filtered = temas.filter(t => (t.titulo || '').toLowerCase().includes(search));
+    document.getElementById('emptyState').style.display = temas.length === 0 ? 'block' : 'none';
+    document.getElementById('boardWrap').style.display = temas.length === 0 ? 'none' : 'block';
+    renderStats(); renderProgress(); renderBoard(filtered);
+  }
+
+  function renderStats(){
+    const counts = { nao:0, and:0, con:0, rev:0 };
+    temas.forEach(t => { if(counts[t.status] !== undefined) counts[t.status]++; });
+    const row = document.getElementById('statsRow');
+    const badge = document.getElementById('syncBadge');
+    row.innerHTML = '';
+    COLUMN_ORDER.forEach(key => {
+      const meta = STATUS_META[key];
+      const pill = document.createElement('div');
+      pill.className = 'stat-pill';
+      pill.innerHTML = `<span class="dot ${meta.bg}"></span>${meta.label} <b>${counts[key]}</b>`;
+      row.appendChild(pill);
+    });
+    row.appendChild(badge);
+  }
+
+  function renderProgress(){
+    const total = temas.length;
+    const done = temas.filter(t => t.status === 'con').length;
+    const pct = total === 0 ? 0 : Math.round((done/total)*100);
+    document.getElementById('barFill').style.width = pct + '%';
+    const circumference = 163.36;
+    document.getElementById('ringFillCircle').style.strokeDashoffset = circumference - (circumference * pct / 100);
+    document.getElementById('ringLabel').textContent = pct + '%';
+    const headline = document.getElementById('progressHeadline');
+    const sub = document.getElementById('progressSub');
+    if(total === 0){
+      headline.textContent = 'Comece cadastrando seu primeiro tema';
+      sub.textContent = 'Nenhum tema cadastrado ainda';
+    } else {
+      headline.textContent = `${done} de ${total} temas concluídos`;
+      const overdue = temas.filter(t => isOverdue(t.data, t.status)).length;
+      sub.textContent = overdue > 0 ? `${overdue} tema(s) com prazo vencido` : 'Você está em dia com sua agenda';
+    }
+  }
+
+  function renderBoard(list){
+    const board = document.getElementById('board');
+    board.innerHTML = COLUMN_ORDER.map(statusKey => {
+      const meta = STATUS_META[statusKey];
+      const items = list.filter(t => t.status === statusKey).sort((a,b) => (a.data || '9999').localeCompare(b.data || '9999'));
+      const cardsHtml = items.length ? items.map(cardHtml).join('') : `<div class="empty-col">Nenhum tema aqui</div>`;
+      return `<div class="column"><div class="column-head"><span class="dot ${meta.bg}"></span><h3>${meta.label}</h3><span>${items.length}</span></div>${cardsHtml}</div>`;
+    }).join('');
+  }
+
+  function cardHtml(t){
+    const overdue = isOverdue(t.data, t.status);
+    const dateLine = t.data ? `<div class="meta ${overdue ? 'overdue' : ''}">${overdue ? '⚠' : '📅'} ${fmtDate(t.data)}${overdue ? ' · atrasado' : ''}</div>` : '';
+    const notaLine = t.notas ? `<div class="meta">📝 ${escapeHtml(t.notas)}</div>` : '';
+    const linkLine = t.link ? `<a class="link" href="${escapeAttr(t.link)}" target="_blank" rel="noopener">▶ Acessar material</a>` : '';
+    return `<div class="card" data-status="${t.status}" data-id="${t.id}">
+      <h4>${escapeHtml(t.titulo || '')}</h4>${dateLine}${notaLine}${linkLine}
+      <div class="card-actions">
+        <button class="btn-icon" data-action="edit" data-id="${t.id}" title="Editar">✎ Editar</button>
+        <button class="btn-icon danger" data-action="delete" data-id="${t.id}" title="Excluir">🗑 Excluir</button>
+      </div></div>`;
+  }
+
+  function escapeHtml(str){ const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+  function escapeAttr(str){ return String(str).replace(/"/g,'&quot;'); }
+
+  // ===== Modal de tema =====
+  const overlay = document.getElementById('overlay');
+  const form = document.getElementById('temaForm');
+  const btnSalvar = document.getElementById('btnSalvar');
+
+  function openModal(tema){
+    editingId = tema ? tema.id : null;
+    document.getElementById('modalTitle').textContent = tema ? 'Editar tema' : 'Novo tema de estudo';
+    btnSalvar.textContent = tema ? 'Salvar alterações' : 'Salvar tema';
+    document.getElementById('temaId').value = tema ? tema.id : '';
+    document.getElementById('titulo').value = tema ? tema.titulo : '';
+    document.getElementById('data').value = tema ? (tema.data || '') : '';
+    document.getElementById('status').value = tema ? tema.status : 'nao';
+    document.getElementById('link').value = tema ? (tema.link || '') : '';
+    document.getElementById('notas').value = tema ? (tema.notas || '') : '';
+    overlay.classList.add('active');
+    setTimeout(() => document.getElementById('titulo').focus(), 50);
+  }
+  function closeModal(){ overlay.classList.remove('active'); form.reset(); editingId = null; }
+
+  document.getElementById('btnNovo').addEventListener('click', () => openModal(null));
+  document.getElementById('btnNovoEmpty').addEventListener('click', () => openModal(null));
+  document.getElementById('btnCancelar').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+
+  // ===== Modal de conexão com a nuvem =====
+  const cloudOverlay = document.getElementById('cloudOverlay');
+  const firebaseConfigInput = document.getElementById('firebaseConfigInput');
+
+  function openCloudModal(){
+    const saved = getSavedConfig();
+    firebaseConfigInput.value = saved ? JSON.stringify(saved, null, 2) : '';
+    document.getElementById('btnCloudDisconnect').style.display = saved ? 'inline-flex' : 'none';
+    cloudOverlay.classList.add('active');
+  }
+  function closeCloudModal(){ cloudOverlay.classList.remove('active'); }
+
+  document.getElementById('syncBadge').addEventListener('click', openCloudModal);
+  document.getElementById('btnCloudCancel').addEventListener('click', closeCloudModal);
+  cloudOverlay.addEventListener('click', (e) => { if(e.target === cloudOverlay) closeCloudModal(); });
+
+  document.getElementById('btnCloudSave').addEventListener('click', async () => {
+    let raw = firebaseConfigInput.value.trim();
+    if(!raw){ showToast('Cole a configuração do Firebase antes de conectar.'); return; }
+    raw = raw.replace(/^\s*(const|var|let)\s+firebaseConfig\s*=\s*/, '').replace(/;\s*$/, '');
+    let cfg;
+    try{
+      // aceita tanto JSON estrito quanto o objeto JS colado direto do console do Firebase
+      cfg = JSON.parse(raw);
+    }catch(e){
+      try{ cfg = Function('"use strict"; return (' + raw + ')')(); }
+      catch(e2){ showToast('Não consegui ler essa configuração. Confira se copiou o objeto completo.'); return; }
+    }
+    if(!cfg || !cfg.apiKey || !cfg.projectId){
+      showToast('Essa configuração parece incompleta. Copie o objeto inteiro do Firebase.');
+      return;
+    }
+    const ok = await connectCloud(cfg);
+    if(ok){
+      saveConfig(cfg);
+      closeCloudModal();
+      showToast('Conectado! Seus temas agora sincronizam na nuvem.');
+    } else {
+      showToast('Não foi possível conectar. Confira a configuração e as regras do Firestore.');
+    }
+  });
+
+  document.getElementById('btnCloudDisconnect').addEventListener('click', () => {
+    showConfirm({
+      title: 'Desconectar da nuvem',
+      message: 'Este navegador vai parar de sincronizar e passará a salvar os temas só localmente. Seus dados na nuvem não são apagados.',
+      buttons: [
+        { label: 'Cancelar' },
+        { label: 'Desconectar', danger: true, onClick: () => {
+          if(unsubscribeCloud){ unsubscribeCloud(); unsubscribeCloud = null; }
+          clearConfig();
+          cloudMode = false;
+          closeCloudModal();
+          loadLocal();
+          setSyncBadge(storageOk ? 'local' : 'error');
+          render();
+          showToast('Desconectado da nuvem.');
+        }}
+      ]
+    });
+  });
+
+  // ===== Confirmação e aviso próprios =====
+  const confirmOverlay = document.getElementById('confirmOverlay');
+  function showConfirm({ title, message, buttons }){
+    document.getElementById('confirmTitle').textContent = title || 'Confirmar ação';
+    document.getElementById('confirmMessage').textContent = message || '';
+    const btnWrap = document.getElementById('confirmButtons');
+    btnWrap.innerHTML = '';
+    buttons.forEach(b => {
+      const el = document.createElement('button');
+      el.type = 'button';
+      el.textContent = b.label;
+      el.className = b.danger ? 'btn-primary' : 'btn-ghost';
+      if(b.danger){ el.style.background = 'var(--danger)'; el.style.color = '#fff'; }
+      el.addEventListener('click', () => { confirmOverlay.classList.remove('active'); if(b.onClick) b.onClick(); });
+      btnWrap.appendChild(el);
+    });
+    confirmOverlay.classList.add('active');
+  }
+  let toastTimer = null;
+  function showToast(message){
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+  }
+  confirmOverlay.addEventListener('click', (e) => { if(e.target === confirmOverlay) confirmOverlay.classList.remove('active'); });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape'){
+      if(overlay.classList.contains('active')) closeModal();
+      if(cloudOverlay.classList.contains('active')) closeCloudModal();
+      if(confirmOverlay.classList.contains('active')) confirmOverlay.classList.remove('active');
+    }
+  });
+
+  async function salvarTema(){
+    const tituloInput = document.getElementById('titulo');
+    const titulo = tituloInput.value.trim();
+    if(!titulo){
+      tituloInput.focus();
+      tituloInput.style.borderColor = 'var(--danger)';
+      setTimeout(() => tituloInput.style.borderColor = '', 1500);
+      return;
+    }
+    const existente = editingId ? temas.find(t => t.id === editingId) : null;
+    const id = editingId || uid();
+    const data = {
+      titulo,
+      data: document.getElementById('data').value || '',
+      status: document.getElementById('status').value,
+      link: document.getElementById('link').value.trim(),
+      notas: document.getElementById('notas').value.trim(),
+      criadoEm: (existente && existente.criadoEm) || new Date().toISOString(),
+      atualizadoEm: new Date().toISOString(),
+    };
+    btnSalvar.disabled = true;
+    try{
+      await gravarTema(id, data);
+      closeModal();
+      showToast(editingId ? 'Alterações salvas.' : 'Tema adicionado.');
+    }catch(err){
+      console.error(err);
+      showToast('Não foi possível salvar agora. Tente novamente.');
+    }finally{
+      btnSalvar.disabled = false;
+    }
+  }
+  btnSalvar.addEventListener('click', salvarTema);
+  form.addEventListener('submit', (e) => e.preventDefault());
+  form.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && e.target.tagName !== 'TEXTAREA'){ e.preventDefault(); salvarTema(); }
+  });
+
+  document.getElementById('board').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    const id = btn.getAttribute('data-id');
+    const action = btn.getAttribute('data-action');
+    if(action === 'edit'){
+      const tema = temas.find(t => t.id === id);
+      if(tema) openModal(tema);
+    } else if(action === 'delete'){
+      const tema = temas.find(t => t.id === id);
+      if(tema){
+        showConfirm({
+          title: 'Excluir tema',
+          message: `Tem certeza que deseja excluir o tema "${tema.titulo}"? Essa ação não pode ser desfeita.`,
+          buttons: [
+            { label: 'Cancelar' },
+            { label: 'Excluir', danger: true, onClick: async () => {
+              try{ await apagarTema(id); showToast('Tema excluído.'); }
+              catch(err){ console.error(err); showToast('Não foi possível excluir agora. Tente novamente.'); }
+            }}
+          ]
+        });
+      }
+    }
+  });
+
+  document.getElementById('searchInput').addEventListener('input', render);
+
+  // ===== Backup manual (funciona em qualquer modo) =====
+  function exportBackup(){
+    const blob = new Blob([JSON.stringify(temas, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-agenda-dp-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  async function aplicarImportacao(parsed, substituir){
+    const normalizados = parsed.map(t => ({
+      id: (!substituir && cloudMode) ? uid() : (t.id || uid()),
+      titulo: t.titulo || '(sem título)',
+      data: t.data || '',
+      status: STATUS_META[t.status] ? t.status : 'nao',
+      link: t.link || '',
+      notas: t.notas || '',
+      criadoEm: t.criadoEm || new Date().toISOString(),
+      atualizadoEm: new Date().toISOString(),
+    }));
+    if(cloudMode){
+      if(substituir){
+        const atuais = await firebaseApi.getDocs(temasCollection);
+        await Promise.all(atuais.docs.map(d => firebaseApi.deleteDoc(firebaseApi.doc(temasCollection, d.id))));
+      }
+      await Promise.all(normalizados.map(t => firebaseApi.setDoc(firebaseApi.doc(temasCollection, t.id), t)));
+    } else {
+      temas = substituir ? normalizados : temas.concat(normalizados);
+      saveLocal();
+      render();
+    }
+  }
+
+  function importBackup(file){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      let parsed;
+      try{
+        parsed = JSON.parse(e.target.result);
+        if(!Array.isArray(parsed)) throw new Error('Formato inválido');
+      }catch(err){ showToast('Não foi possível ler este arquivo de backup.'); return; }
+      showConfirm({
+        title: 'Importar backup',
+        message: `Encontrados ${parsed.length} tema(s) no arquivo. Como deseja importar?`,
+        buttons: [
+          { label: 'Cancelar' },
+          { label: 'Substituir tudo', danger: true, onClick: async () => {
+            try{ await aplicarImportacao(parsed, true); showToast('Backup importado (temas anteriores substituídos).'); }
+            catch(err){ console.error(err); showToast('Não foi possível importar agora. Tente novamente.'); }
+          }},
+          { label: 'Adicionar aos atuais', onClick: async () => {
+            try{ await aplicarImportacao(parsed, false); showToast('Backup importado com sucesso.'); }
+            catch(err){ console.error(err); showToast('Não foi possível importar agora. Tente novamente.'); }
+          }},
+        ]
+      });
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById('btnExport').addEventListener('click', exportBackup);
+  document.getElementById('btnImport').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file) importBackup(file);
+    e.target.value = '';
+  });
+
+  initStorage();
+</script>
+
+</body>
+</html>
